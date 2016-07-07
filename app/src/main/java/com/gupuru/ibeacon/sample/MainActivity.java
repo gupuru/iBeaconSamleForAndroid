@@ -24,6 +24,9 @@ import org.altbeacon.beacon.Region;
 
 import java.util.Collection;
 
+import io.realm.Realm;
+import io.realm.RealmConfiguration;
+
 
 public class MainActivity extends AppCompatActivity implements BeaconConsumer {
 
@@ -42,6 +45,9 @@ public class MainActivity extends AppCompatActivity implements BeaconConsumer {
         setContentView(R.layout.activity_main);
 
         textView = (TextView) findViewById(R.id.text_status);
+
+        RealmConfiguration realmConfig = new RealmConfiguration.Builder(MainActivity.this).build();
+        Realm.setDefaultConfiguration(realmConfig);
 
         //マシュマロ判別
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
@@ -130,7 +136,7 @@ public class MainActivity extends AppCompatActivity implements BeaconConsumer {
             @Override
             public void didRangeBeaconsInRegion(Collection<Beacon> beacons, Region region) {
                 // 検出したビーコンの情報を全部Logに書き出す
-                for(Beacon beacon : beacons) {
+                for (Beacon beacon : beacons) {
                     String message = "UUID:" + beacon.getId1() + ", major:" + beacon.getId2()
                             + ", minor:" + beacon.getId3() + ", Distance:" + beacon.getDistance()
                             + ",RSSI" + beacon.getRssi() + ", Name:" + beacon.getBluetoothName();
@@ -146,8 +152,26 @@ public class MainActivity extends AppCompatActivity implements BeaconConsumer {
         }
     }
 
+    private void save(final String message) {
+        final Realm realm = Realm.getDefaultInstance();
+        realm.executeTransactionAsync(new Realm.Transaction() {
+            @Override
+            public void execute(Realm realm) {
+                Log log = realm.createObject(Log.class);
+                log.setLog(message);
+                log.setTime(System.currentTimeMillis());
+            }
+        }, new Realm.Transaction.OnSuccess() {
+            @Override
+            public void onSuccess() {
+                realm.close();
+            }
+        });
+    }
+
     @SuppressLint("SetTextI18n")
     private void setTextView(final String message) {
+        save(message);
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
