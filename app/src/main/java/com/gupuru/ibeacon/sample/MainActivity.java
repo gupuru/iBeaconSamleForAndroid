@@ -10,6 +10,7 @@ import android.os.Bundle;
 import android.os.RemoteException;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.widget.TextView;
 
 import org.altbeacon.beacon.Beacon;
@@ -105,7 +106,7 @@ public class MainActivity extends AppCompatActivity implements BeaconConsumer {
         final Identifier uuid = Identifier.parse(UUID);
         final Region mRegion = new Region("ibeacon", uuid, null, null);
 
-        beaconManager.setMonitorNotifier(new MonitorNotifier() {
+        beaconManager.addMonitorNotifier(new MonitorNotifier() {
             @Override
             public void didEnterRegion(Region region) {
                 setTextView("didEnterRegion");
@@ -132,7 +133,7 @@ public class MainActivity extends AppCompatActivity implements BeaconConsumer {
             }
         });
 
-        beaconManager.setRangeNotifier(new RangeNotifier() {
+        beaconManager.addRangeNotifier(new RangeNotifier() {
             @Override
             public void didRangeBeaconsInRegion(Collection<Beacon> beacons, Region region) {
                 // 検出したビーコンの情報を全部Logに書き出す
